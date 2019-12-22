@@ -25,3 +25,41 @@ fun Int.inverse() : Float = 1f / this
 fun Float.maxScale(i : Int, n : Int) : Float = Math.max(0f, this - i * n.inverse())
 fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n)) * n
 fun Float.sinify() : Float = Math.sin(this * Math.PI).toFloat()
+fun Float.cosify() : Float = 1f - Math.sin(Math.PI / 2 + this * (Math.PI / 2)).toFloat()
+
+fun Canvas.drawColorArc(i : Int, scale : Float, size : Float, paint : Paint) {
+    val sf : Float = scale.sinify().divideScale(i, colors.size)
+    val deg : Float = 360f / colors.size
+    paint.style = Paint.Style.STROKE
+    paint.color = Color.parseColor(colors[i])
+    save()
+    drawArc(RectF(-size, -size, size, size), deg * i, deg * sf, false, paint)
+    restore()
+}
+
+fun Canvas.drawMainArc(scale : Float, size : Float, paint : Paint) {
+    val sc : Float = scale.divideScale(1, 2).cosify()
+    val deg : Float = 360f * sc
+    paint.style = Paint.Style.FILL
+    paint.color = mainColor
+    drawArc(RectF(-size, -size, size, size), 360f - deg, deg, true, paint)
+}
+
+fun Canvas.drawSweepMultiColor(scale : Float, size : Float, paint : Paint) {
+    for (j in 0..(colors.size - 1)) {
+        drawColorArc(j, scale, size, paint)
+    }
+    drawMainArc(scale, size, paint)
+}
+
+fun Canvas.drawSMCNode(i : Int, scale : Float, paint : Paint) {
+    val w : Float = width.toFloat()
+    val h : Float = height.toFloat()
+    val gap : Float = h / (nodes + 1)
+    val size : Float = gap / sizeFactor
+    save()
+    translate(w / 2, gap * (i + 1))
+    drawSweepMultiColor(scale, size, paint)
+    restore()
+}
+
