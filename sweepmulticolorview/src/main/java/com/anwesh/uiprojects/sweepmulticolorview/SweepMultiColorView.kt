@@ -217,5 +217,14 @@ class SweepMultiColorView(ctx : Context) : View(ctx) {
             }
         }
     }
+
+    companion object {
+
+        fun create(activity : Activity) : SweepMultiColorView {
+            val view : SweepMultiColorView = SweepMultiColorView(activity)
+            activity.setContentView(view)
+            return view
+        }
+    }
 }
 
