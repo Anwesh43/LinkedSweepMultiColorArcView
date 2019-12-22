@@ -194,5 +194,27 @@ class SweepMultiColorView(ctx : Context) : View(ctx) {
             curr.startUpdating(cb)
         }
     }
+
+    data class Renderer(var view : SweepMultiColorView) {
+
+        private val scm : SweepMultiColorArc = SweepMultiColorArc(0)
+        private val animator : Animator = Animator(view)
+
+        fun render(canvas : Canvas, paint : Paint) {
+            canvas.drawColor(backColor)
+            scm.draw(canvas, paint)
+            animator.animate {
+                scm.update {
+                    animator.stop()
+                }
+            }
+        }
+
+        fun handleTap() {
+            scm.startUpdating {
+                animator.start()
+            }
+        }
+    }
 }
 
