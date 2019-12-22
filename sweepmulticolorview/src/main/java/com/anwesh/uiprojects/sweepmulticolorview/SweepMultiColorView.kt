@@ -16,10 +16,11 @@ import android.view.MotionEvent
 val nodes : Int = 5
 val colors : Array<String> = arrayOf("#673AB7", "#311B92", "#33691E")
 val mainColor : Int = Color.parseColor("#009688")
-val scGap : Float = 0.02f
+val scGap : Float = 0.01f
 val sizeFactor : Float = 2.9f
 val delay : Long = 30
 val backColor : Int = Color.parseColor("#BDBDBD")
+val strokeFactor : Int = 90
 
 fun Int.inverse() : Float = 1f / this
 fun Float.maxScale(i : Int, n : Int) : Float = Math.max(0f, this - i * n.inverse())
@@ -43,6 +44,8 @@ fun Canvas.drawMainArc(scale : Float, size : Float, paint : Paint) {
     paint.style = Paint.Style.FILL
     paint.color = mainColor
     drawArc(RectF(-size, -size, size, size), 360f - deg, deg, true, paint)
+    paint.style = Paint.Style.STROKE
+    drawArc(RectF(-size, -size, size, size), 360f - deg, deg, false, paint)
 }
 
 fun Canvas.drawSweepMultiColor(scale : Float, size : Float, paint : Paint) {
@@ -55,6 +58,7 @@ fun Canvas.drawSweepMultiColor(scale : Float, size : Float, paint : Paint) {
 fun Canvas.drawSMCNode(i : Int, scale : Float, paint : Paint) {
     val w : Float = width.toFloat()
     val h : Float = height.toFloat()
+    paint.strokeWidth = Math.min(w, h) / strokeFactor
     val gap : Float = h / (nodes + 1)
     val size : Float = gap / sizeFactor
     save()
@@ -85,7 +89,7 @@ class SweepMultiColorView(ctx : Context) : View(ctx) {
 
         fun update(cb : (Float) -> Unit) {
             scale += scGap * dir
-            if (Math.abs(scale - prevScale) > 0f) {
+            if (Math.abs(scale - prevScale) > 1f) {
                 scale = prevScale + dir
                 dir = 0f
                 prevScale = scale
@@ -148,7 +152,7 @@ class SweepMultiColorView(ctx : Context) : View(ctx) {
 
         fun draw(canvas : Canvas, paint : Paint) {
             canvas.drawSMCNode(i, state.scale, paint)
-            next?.draw(canvas, paint)
+            prev?.draw(canvas, paint)
         }
 
         fun update(cb : (Float) -> Unit) {
@@ -174,12 +178,11 @@ class SweepMultiColorView(ctx : Context) : View(ctx) {
 
     data class SweepMultiColorArc(var i : Int) {
 
-        private val root : SMCNode = SMCNode(0)
-        private var curr : SMCNode = root
+        private var curr : SMCNode = SMCNode(0)
         private var dir : Int = 1
 
         fun draw(canvas : Canvas, paint : Paint) {
-            root.draw(canvas, paint)
+            curr.draw(canvas, paint)
         }
 
         fun update(cb : (Float) -> Unit) {
